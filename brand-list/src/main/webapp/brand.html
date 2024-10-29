@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>品牌列表</title>
+    <link rel="stylesheet" href="CSS/style.css">
+</head>
+<body>
+<div class="container">
+    <label>
+        <input type="button" value="添加品牌" style="background-color:#167f92 ;margin-bottom: 10px " id="addButton"/>
+
+    </label>
+    <hr>
+    <table id="brandTable" class="responseTable"></table>
+</div>
+
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+<script>
+    window.onload=function (){
+        getBrandList();
+        // 在获取品牌列表之后，立即绑定事件
+        bindDeleteListeners();
+    }
+<!--    获取品牌列表-->
+    function getBrandList(){
+    axios({
+        method:"get",
+        url:"http://localhost:8080/brand"
+    }).then(function (resp){
+        let brands=resp.data;
+        let tableData= `<tr>
+            <th>序号</th>
+            <th>品牌名称</th>
+            <th>企业名称</th>
+            <th>排序</th>
+            <th>品牌介绍</th>
+            <th>操作</th>
+        </tr>`;
+
+        //遍历响应的数据
+        for(let i=0; i<brands.length;i++){
+            let brand =brands[i];
+            tableData +=`
+            <tr data-id="${brand.id}">
+            <td>${brand.id}</td>
+            <td>${brand.brandName}</td>
+            <td>${brand.companyName}</td>
+            <td>${brand.ordered}</td>
+            <td>${brand.description}</td>
+            <td>
+            <span class="delete" style="color:red">删除</span>
+            </td>
+            </tr>`;
+
+            //拼接响应结果
+           const tableValue= document.getElementById("brandTable");
+           if(tableValue){
+               tableValue.innerHTML=tableData;
+               // 重新绑定事件
+               bindDeleteListeners();
+           }
+        }
+    })
+    }
+
+    //新增品牌
+    document.getElementById("addButton").onclick=function (){
+        location.href="brandInfo.html"
+    }
+
+
+    // 删除品牌
+    function deleteBrand(brandId) {
+        axios({ //使用 axios库发送一个HTTP DELETE请求到服务器。
+            method: 'delete',
+            url: `http://localhost:8080/delBrand?id=${brandId}`
+        }).then(() => { //.then() 方法用于处理异步请求的成功回调。
+            const row = document.querySelector(`[data-id='${brandId}']`);
+            row.remove(); // 移除该行
+            alert('品牌删除成功');
+        }).catch((error) => {
+            console.error('删除失败', error);
+            alert('品牌删除失败，请稍后重试');
+        });
+    }
+
+    // 绑定删除的监听器
+    function bindDeleteListeners() {
+        document.querySelectorAll('.delete').forEach(deleteBtn => { //为每个元素绑定一个事件监听器
+            deleteBtn.onclick = function (event) {
+                event.stopPropagation(); // 阻止点击事件冒泡
+                const brandId = this.closest('tr').getAttribute('data-id'); //通过查找当前按钮所在的行并获取该行的 data-id 属性值，从而得到要删除的品牌ID。
+                deleteBrand(brandId); //删除
+            };
+        });
+    }
+</script>
+</body>
+
+<style>
+    .responseTable {
+        width: 95%;
+        overflow: hidden;
+        background: #FFF;
+        color: #024457;
+        border-radius: 10px;
+        border: 1px solid #167F92;
+    }
+
+    .responseTable tr {
+        border: 1px solid #D9E4E6;
+    }
+
+    .responseTable tr:nth-child(odd) {
+        background-color: #EAF3F3;
+    }
+
+    .responseTable th {
+        display: none;
+        border: 1px solid #FFF;
+        background-color: #167F92;
+        color: #FFF;
+        padding: 1em;
+    }
+
+    .responseTable th:first-child {
+        display: table-cell;
+        text-align: center;
+    }
+
+    .responseTable th:nth-child(2) {
+        display: table-cell;
+    }
+
+    .responseTable th:nth-child(2) span {
+        display: none;
+    }
+
+    .responseTable th:nth-child(2):after {
+        content: attr(data-th);
+    }
+
+    @media (min-width: 480px) {
+        .responseTable th:nth-child(2) span {
+            display: block;
+        }
+
+        .responseTable th:nth-child(2):after {
+            display: none;
+        }
+    }
+
+    .responseTable td {
+        display: block;
+        word-wrap: break-word;
+        max-width: 7em;
+    }
+
+    .responseTable td:first-child {
+        display: table-cell;
+        text-align: center;
+        border-right: 1px solid #D9E4E6;
+    }
+
+    @media (min-width: 480px) {
+        .responseTable td {
+            border: 1px solid #D9E4E6;
+        }
+    }
+
+    .responseTable th, .responseTable td {
+        text-align: left;
+        margin: .5em 1em;
+    }
+
+    @media (min-width: 480px) {
+        .responseTable th, .responseTable td {
+            display: table-cell;
+            padding: 1em;
+        }
+    }
+
+    /*body {*/
+    /*        padding: 0 2em;*/
+    /*        font-family: Arial, sans-serif;*/
+    /*        color: #024457;*/
+    /*        background: #f2f2f2;*/
+    /*    }*/
+
+    h1 {
+        font-family: Verdana;
+        font-weight: normal;
+        color: #024457;
+    }
+
+    h1 span {
+        color: #167F92;
+    }
+
+    span {
+        cursor: pointer;
+    }
+
+</style>
+
+</html>
